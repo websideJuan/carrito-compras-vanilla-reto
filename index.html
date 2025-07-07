@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carrito compras vanilla</title>
+    <link rel="stylesheet" href="/carrito-compras-vanilla/src/styles.css" />
+
+    <!--
+    import font awesome icons 
+  -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+      integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <nav>
+      <div class="logo">
+        <p>Finaly Shop</p>
+      </div>
+      <div
+        class="cart-icon"
+        style="
+          cursor: pointer;
+          background-color: white;
+          border-radius: 50%;
+          padding: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        "
+      >
+        <i
+          id="toggleCart"
+          class="fas fa-shopping-cart"
+          style="color: var(--primary-color)"
+        ></i>
+      </div>
+      <ul>
+        <li><a href="#home">Inicio</a></li>
+        <li><a href="#products">Productos</a></li>
+        <li><a href="#cart">Carrito</a></li>
+        <li><a href="#contact">Contacto</a></li>
+      </ul>
+      <div class="btn-toggle-menu">
+        <button id="toggleMenu" class="toggle-menu-button">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+      <div class="search-bar">
+        <div class="form-group">
+          <input
+            type="text"
+            placeholder="Buscar productos..."
+            id="search-input"
+          />
+          <button id="search-button"><i class="fas fa-search"></i></button>
+        </div>
+      </div>
+    </nav>
+    <div id="app"></div>
+
+    <footer>
+      <p>© 2023 Finaly Shop. Todos los derechos reservados.</p>
+      <p>
+        Desarrollado por
+        <a href="" target="_blank" rel="noopener noreferrer"
+          >MonkeyDjuan</a>
+      </p>
+      <p>
+        <a href="" target="_blank" rel="noopener noreferrer"
+          >Política de privacidad</a>
+      </p>
+      <p>
+        <a href="" target="_blank" rel="noopener noreferrer"
+          >Términos y condiciones</a>
+      </p>
+      <p>
+        <a href="" target="_blank" rel="noopener noreferrer"
+          >Contacto</a>
+      </p>
+      
+      <p>
+        Síguenos en
+        <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">Facebook</a>,
+        <a href="https://www.twitter.com" target="_blank" rel="noopener noreferrer">Twitter</a>,
+        <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
+
+      </p>
+    </footer>
+
+    <script type="module" src="/carrito-compras-vanilla/src/app.js"></script>
+  </body>
+</html>
