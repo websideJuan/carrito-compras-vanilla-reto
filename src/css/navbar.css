@@ -7,8 +7,8 @@ nav {
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
   display: grid;
   grid-template-areas:
-    "logo btn-toggle-menu cart-icon"
-    "search-bar search-bar search-bar"
+    "btn-toggle-menu logo logo logo logo logo logo  cart-icon"
+    "search-bar search-bar search-bar search-bar search-bar search-bar search-bar search-bar"
     ;
   gap: 10px 0;
   align-items: center;
@@ -28,8 +28,7 @@ nav .logo p {
 nav .btn-toggle-menu {
   grid-area: btn-toggle-menu;
   justify-self: start;
-  position: relative;
-  left: -20px;
+
 }
 
 nav .btn-toggle-menu button {
@@ -41,6 +40,7 @@ nav .btn-toggle-menu button {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
 }
 
 nav .cart-icon {
@@ -125,3 +125,11 @@ nav ul li a {
   text-decoration: none;
   font-size: 1rem;
 }
+
+
+/*
+  Responsive styles from mobile first
+  We will use media queries to
+  create a responsive navbar that works on mobile and desktop 
+*/
+

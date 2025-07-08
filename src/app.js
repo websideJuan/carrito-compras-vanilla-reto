@@ -1,25 +1,24 @@
-import { feching } from "./fetching.js";
+import { productsController } from "./controller/products.controller.js";
 const app = document.getElementById("app");
 
 const finalyShop = { id: 0, user: "", products: [], total: 0 };
-let currentPage = 0;
+let currentPage = localStorage.getItem("currentPage") || 0;
 
-const { getData } = feching();
-document.addEventListener("DOMContentLoaded", async () => {
-  const data = await getData();
-  console.log("Data loaded:", data);
-  
-  renderAppContent();
+async function main() {
+  const data = await productsController.get();
+
+  app.innerHTML = renderAppHTML();
+
+  listeners(app.parentElement, data);
   renderCard(data[`page_${currentPage}`]);
-});
+}
 
-const renderAppContent = () => {
-  app.innerHTML = `
-    <div class="container">
+const renderAppHTML = () => {
+  return `<div class="container">
       <div style="padding: 20px;  box-shadow: 0 0 10px  rgba(0 0 0 / .2); display: flex; justify-content: space-between; align-items: center;">
         <button id="filter-button" style="background-color: white;  color: var(--text-color);">Filtrar</button>
         
-        <select id="order-select" style="width:100px;">
+        <select id="order-select">
           <option value="default">Ordenar</option>
           <option value="price-asc">Precio: Bajo a Alto</option> 
           <option value="price-desc">Precio: Alto a Bajo</option>
@@ -27,8 +26,20 @@ const renderAppContent = () => {
         </select>
       </div>
       <div class="products">
+        <div style="padding:0 20px; padding-top: 20px; ">
+          <p style="margin-bottom: 20px;">Catalogo / Productos</p>
+          <div class="filter-products">
+            ${["Electronics", "Jewelery", "Men's Clothing", "Women's Clothing"]
+              .map(
+                (category) => `
+              <button class="filter-button" style="background-color: lightgray;" data-category="${category}">${category}</button>
+            `
+              )
+              .join("")}
+          </div>
+        </div>
         <ul id="product-list" class="grid"></ul>
-
+  
         <div class="pagination">
           <button id="prev-page">Anterior</button>
           <span id="page-info">Página 1 de 5</span>
@@ -52,18 +63,14 @@ const renderAppContent = () => {
           </div>
         </div>
       </div>
-    </div>
-  `;
-  // Aquí puedes agregar más lógica para cargar productos y manejar el carrito
-
-  listeners(app.parentElement);
+    </div>`;
 };
 
-const listeners = (app) => {
-  app.addEventListener("click", (event) => renderForClick(event));
+const listeners = (app, data) => {
+  app.addEventListener("click", (event) => renderForClick(event, data));
 };
 
-const renderForClick = async (event) => {
+const renderForClick = (event, data) => {
   const cart = document.querySelector(".cart");
   const cratContent = document.querySelector(".cart-content");
   const pageinfo = document.getElementById("page-info");
@@ -78,56 +85,63 @@ const renderForClick = async (event) => {
 
   if (event.target.id === "prev-page") {
     currentPage--;
+    localStorage.setItem("currentPage", currentPage);
 
-    const data = await getData();
     if (currentPage < 0) {
       currentPage = Object.keys(data).length - 1;
     }
-    
+
     const newListCard = data[`page_${currentPage}`];
-    
+
     renderCard(newListCard);
-    pageinfo.innerText = `Página ${currentPage + 1} de ${Object.keys(data).length}`;
+    pageinfo.innerText = `Página ${currentPage + 1} de ${
+      Object.keys(data).length
+    }`;
   }
 
   if (event.target.id === "next-page") {
     currentPage++;
-
-    const data = await getData();
+    localStorage.setItem("currentPage", currentPage);
     if (currentPage >= Object.keys(data).length) {
       currentPage = 0;
     }
 
     const newListCard = data[`page_${currentPage}`];
     renderCard(newListCard);
-    pageinfo.innerText = `Página ${currentPage + 1} de ${Object.keys(data).length}`;
+    pageinfo.innerText = `Página ${currentPage + 1} de ${
+      Object.keys(data).length
+    }`;
   }
 
   if (event.target.classList.contains("add-to-cart")) {
     const button = event.target;
     button.style.opacity = "1";
     button.innerHTML = `
-      <div class="update-cart-message" style="display: flex; justify-content: space-between; ">
-        <p>-</p>
-        <p>1</p>
-        <p>+</p>
-      </div>
-    `;
-    button.disabled = true;
-    addToCart(event.target.parentElement);
+        <div class="update-cart-message" style="display: flex; justify-content: space-between; ">
+          <p>-</p>
+          <p>1</p>
+          <p>+</p>
+        </div>
+      `;
+
+    addToCart(event.target.dataset.id, data);
   }
 };
 
-const addToCart = (element) => {
+const addToCart = (id, data) => {
+  const forFindProducts = Object.keys(data).reduce((acc, key) => {
+    return acc.concat(data[key]);
+  }, []);
   const totalPriceElement = document.getElementById("total-price");
+  const findProduct = forFindProducts.find(
+    (product) => product.id === parseInt(id)
+  );
 
   const product = {
-    id: element.querySelector(".add-to-cart").dataset.id,
-    title: element.querySelector("h3").innerText,
-    price: parseFloat(
-      element.querySelector("p").innerText.replace("Price: $", "")
-    ),
-    image: element.querySelector("img").src,
+    id: findProduct.id,
+    title: findProduct.title,
+    image: findProduct.image,
+    price: parseFloat(findProduct.price),
     quantity: 1,
   };
 
@@ -139,9 +153,9 @@ const addToCart = (element) => {
     // If the product is already in the cart, increase its quantity
     existingProduct.quantity += 1;
     // Update the price of the existing product
-    existingProduct.price = parseFloat(
-      element.querySelector("p").innerText.replace("Price: $", "")
-    ) * existingProduct.quantity;
+    existingProduct.price =
+      parseFloat(element.querySelector("p").innerText.replace("Price: $", "")) *
+      existingProduct.quantity;
   } else {
     // If the product is not in the cart, add it
     finalyShop.products.push(product);
@@ -169,21 +183,25 @@ const renderCartItems = (products) => {
     const li = document.createElement("li");
     li.classList.add("cart-item");
     li.innerHTML = `
-        <img src="${product.image}" alt="${
+          <img src="${product.image}" alt="${
       product.title
     }" style="width: 50px; height: 50px;">
-        <div>
-          <h4>${product.title.split(" ").slice(0, 3).join(" ")}</h4>
-          <p>Precio: $${product.price.toFixed(2)}</p>
-          <p>Cantidad: ${product.quantity}</p>
-          <button class="remove-from-cart" data-id="${
-            product.id
-          }">Eliminar</button>
-          <button class="update-quantity" data-id="${
-            product.id
-          }">Actualizar</button>
-        </div>
-    `;
+          <div>
+            <h4>${product.title.split(" ").slice(0, 3).join(" ")}</h4>
+            <p>Precio: $${product.price.toFixed(2)}</p>
+            <p>Cantidad: ${product.quantity}</p>
+            <button class="remove-from-cart" style="background-color: red;" data-id="${
+              product.id
+            }">
+              <i class="fas fa-trash"></i> Eliminar
+            </button>
+            <button class="update-quantity" style="background-color: royalblue;" data-id="${
+              product.id
+            }">
+              <i class="fas fa-plus"></i> Agregar 
+            </button>
+          </div>
+      `;
     cartItems.appendChild(li);
   });
 };
@@ -194,21 +212,31 @@ const renderCard = (data) => {
 
   data.forEach((product) => {
     const li = document.createElement("li");
-    li.className = "card card-product";
     li.innerHTML = `
-      <div class="product-image">
-        <img src="${product.image}" alt="${product.title}">
-        <div class="product-rating">
-          <span>⭐ ${product.rating.rate} (${product.rating.count})</span>
+      <div class="card card-product">
+        <div class="product-image">
+          <img src="${product.image}" alt="${product.title}">
+          <div class="product-rating">
+            <span>
+              <i class="fa-solid fa-star" style="color: royalblue;"></i> ${
+                product.rating.rate
+              } (${product.rating.count})
+            </span>
+          </div>
         </div>
+        <div class="product-details">
+          <h3>${product.title.split(" ").slice(0, 3).join(" ")}</h3>
+          <p>Price: $${product.price}</p>
+          <p class="product-description">${product.description
+            .split(" ")
+            .slice(0, 13)
+            .join(" ")}</p>
+        </div>
+        <button class="add-to-cart" data-id="${product.id}">Comprar</button>
       </div>
-      <div class="product-details">
-        <h3>${product.title.split(" ").slice(0, 3).join(" ")}</h3>
-        <p>Price: $${product.price}</p>
-        <p class="product-description">${product.description.split(" ").slice(0, 13).join(" ")}</p>
-      </div>
-      <button class="add-to-cart" data-id="${product.id}">Comprar</button>
-    `;
+      `;
     productList.appendChild(li);
   });
 };
+
+window.addEventListener("load", async () => await main());
