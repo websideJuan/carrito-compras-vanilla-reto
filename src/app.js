@@ -1,12 +1,15 @@
 import { productsController } from "./controller/products.controller.js";
 const app = document.getElementById("app");
-
+const cartIcon = document.querySelector(".cart-icon");
 const finalyShop = { id: 0, user: "", products: [], total: 0 };
+
 let currentPage = localStorage.getItem("currentPage") || 0;
+
+console.log(cartIcon);
+
 
 async function main() {
   const data = await productsController.get();
-
   app.innerHTML = renderAppHTML();
 
   listeners(app.parentElement, data);
@@ -15,7 +18,7 @@ async function main() {
 
 const renderAppHTML = () => {
   return `<div class="container">
-      <div style="padding: 20px;  box-shadow: 0 0 10px  rgba(0 0 0 / .2); display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
         <button id="filter-button" style="background-color: white;  color: var(--text-color);">Filtrar</button>
         
         <select id="order-select">
@@ -26,7 +29,8 @@ const renderAppHTML = () => {
         </select>
       </div>
       <div class="products">
-        <div style="padding:0 20px; padding-top: 20px; ">
+        
+        <div class="filter-nav">
           <p style="margin-bottom: 20px;">Catalogo / Productos</p>
           <div class="filter-products">
             ${["Electronics", "Jewelery", "Men's Clothing", "Women's Clothing"]
@@ -38,42 +42,98 @@ const renderAppHTML = () => {
               .join("")}
           </div>
         </div>
+        
+        <div class="products-filter-content">
+            <div class="products-filter">
+              <div class="filter-content" style="display: flex; flex-direction: column; gap: 20px;">
+                
+                <h3>Filtrar por precio</h3>
+                <div class="filter-price">
+                  <input type="range" id="price-range" min="0" max="1000" step="10" value="500">
+                  <p>Rango de precio: $<span id="price-value">500</span></p>
+                </div>
+
+                <button id="apply-filters" style="background-color: var(--secondary-color); width: 100%;">Aplicar Filtros</button>
+              </div>
+            </div>
+        </div>
+
         <ul id="product-list" class="grid"></ul>
   
         <div class="pagination">
           <button id="prev-page">Anterior</button>
-          <span id="page-info">Página 1 de 5</span>
+          <span id="page-info">Página ${parseInt(currentPage)+ 1} de 5</span>
           <button id="next-page" >Siguiente</button>
         </div>
       </div>
+
       <div class="cart">
         <div class="cart-content">
           <div class="cart-header">
             <h2>Carrito</h2>
             <button id="clear-cart">Vaciar Carrito</button>
           </div>
+          <div class="cart-discount">
+            <div class="cart-discount-accordion">
+              <label for="discount-checkbox" class="cart-discount-label">
+                <input type="checkbox" id="discount-checkbox">
+                <p>Descuento: <span id="discount">0%</span></p>
+                <i class="fas fa-chevron-up"></i>
+              </label>
+              <div class="cart-discount-content">
+                <div class="discount-code">
+                  <input type="text" id="discount-code" placeholder="Código de descuento">
+                  <button id="apply-discount">Aplicar</button>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="cart-body">
-            <p id="empty-cart-message">El carrito está vacío.</p>
+            <p id="empty-cart-message">
+              El carrito está vacío.
+            </p>
             <ul id="cart-items" class="cart-items"></ul>
             <p style="margin-top:auto;">Total: $<span id="total-price">0.00</span></p>
           </div>
           <div class="cart-footer">
             <button id="checkout-button" disabled>Finalizar Compra</button>
-            <button id="continue-shopping">Continuar Comprando</button>
+            <button id="continue-shopping" style="background-color: var(--primary-color);">Continuar Comprando</button>
           </div>
         </div>
       </div>
     </div>`;
 };
 
-const listeners = (app, data) => {
+const listeners = (app, data) =>
   app.addEventListener("click", (event) => renderForClick(event, data));
-};
+
+const renderCurrentPage = (btnText, data) => {
+  let currentPage = localStorage.getItem("currentPage") || 0;
+  
+  if (btnText === "next-page") {
+    currentPage++;
+    if (currentPage >= Object.keys(data).length) {
+      currentPage = 0;
+    }
+  } else if (btnText === "prev-page") {
+    currentPage--;
+    if (currentPage < 0) {
+      currentPage = Object.keys(data).length - 1;
+    }
+  }
+  localStorage.setItem("currentPage", currentPage);
+  const newListCard = data[`page_${currentPage}`];
+  renderCard(newListCard);
+
+  const pageinfo = document.getElementById("page-info");
+  pageinfo.innerText = `Página ${currentPage + 1} de ${Object.keys(data).length}`;
+
+}
 
 const renderForClick = (event, data) => {
   const cart = document.querySelector(".cart");
   const cratContent = document.querySelector(".cart-content");
-  const pageinfo = document.getElementById("page-info");
+
 
   if (event.target.id === "toggleCart") {
     cart.style.display = "block";
@@ -83,35 +143,8 @@ const renderForClick = (event, data) => {
     cratContent.classList.remove("cart-content-active");
   }
 
-  if (event.target.id === "prev-page") {
-    currentPage--;
-    localStorage.setItem("currentPage", currentPage);
-
-    if (currentPage < 0) {
-      currentPage = Object.keys(data).length - 1;
-    }
-
-    const newListCard = data[`page_${currentPage}`];
-
-    renderCard(newListCard);
-    pageinfo.innerText = `Página ${currentPage + 1} de ${
-      Object.keys(data).length
-    }`;
-  }
-
-  if (event.target.id === "next-page") {
-    currentPage++;
-    localStorage.setItem("currentPage", currentPage);
-    if (currentPage >= Object.keys(data).length) {
-      currentPage = 0;
-    }
-
-    const newListCard = data[`page_${currentPage}`];
-    renderCard(newListCard);
-    pageinfo.innerText = `Página ${currentPage + 1} de ${
-      Object.keys(data).length
-    }`;
-  }
+  if (event.target.id === "prev-page") renderCurrentPage("prev-page", data);
+  if (event.target.id === "next-page") renderCurrentPage("next-page", data);
 
   if (event.target.classList.contains("add-to-cart")) {
     const button = event.target;
@@ -163,7 +196,21 @@ const addToCart = (id, data) => {
   // Update the total price
   finalyShop.total += product.price;
   totalPriceElement.innerText = finalyShop.total.toFixed(2);
+  
 
+  const cardBadge = document.createElement("div");
+  cardBadge.classList.add("badge", "badge-danger");
+  const cartCount = document.createElement("span");
+  cartCount.id = "cart-count";
+  cartCount.innerText = finalyShop.products.length;
+  cardBadge.appendChild(cartCount);
+
+  const existingCartCount = document.getElementById("cart-count");
+  if (existingCartCount) {
+    existingCartCount.innerText = finalyShop.products.length;
+  } else {
+    cartIcon.appendChild(cardBadge);
+  }
   renderCartItems(finalyShop.products);
 };
 
@@ -193,12 +240,12 @@ const renderCartItems = (products) => {
             <button class="remove-from-cart" style="background-color: red;" data-id="${
               product.id
             }">
-              <i class="fas fa-trash"></i> Eliminar
+              <i class="fas fa-trash"></i>
             </button>
             <button class="update-quantity" style="background-color: royalblue;" data-id="${
               product.id
             }">
-              <i class="fas fa-plus"></i> Agregar 
+              <i class="fas fa-plus"></i> 
             </button>
           </div>
       `;
@@ -207,6 +254,8 @@ const renderCartItems = (products) => {
 };
 
 const renderCard = (data) => {
+  console.log(data);
+
   const productList = document.getElementById("product-list");
   productList.innerHTML = "";
 

@@ -1,37 +1,46 @@
 nav {
   background-color: var(--primary-color);
   color: white;
-  padding: 15px 20px;
-
-  position: relative;
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar {
+  position: relative;
   display: grid;
   grid-template-areas:
-    "btn-toggle-menu logo logo logo logo logo logo  cart-icon"
-    "search-bar search-bar search-bar search-bar search-bar search-bar search-bar search-bar"
-    ;
+    "btn-toggle-menu logo  cart-icon"
+    "search-bar search-bar search-bar";
   gap: 10px 0;
+  grid-template-columns: 30px 1fr 30px;
   align-items: center;
 }
 
-nav .logo {
+@media (min-width: 768px) {
+  .navbar {
+    grid-template-areas:
+      "btn-toggle-menu logo search-bar cart-icon";
+    grid-template-columns: 30px 1fr 2fr 30px;
+  }
+  
+}
+
+.navbar .logo {
   grid-area: logo;
   display: flex;
   align-items: center;
 }
-nav .logo p {
+.navbar .logo p {
   margin: 0;
   font-size: 1.5rem;
   font-weight: bold;
 }
 
-nav .btn-toggle-menu {
+.navbar .btn-toggle-menu {
   grid-area: btn-toggle-menu;
   justify-self: start;
-
 }
 
-nav .btn-toggle-menu button {
+.navbar .btn-toggle-menu button {
   background-color: transparent;
   border: none;
   color: white;
@@ -43,27 +52,26 @@ nav .btn-toggle-menu button {
   padding: 0;
 }
 
-nav .cart-icon {
+.navbar .cart-icon {
   grid-area: cart-icon;
-  cursor: pointer;
-  background-color: white;
-  border-radius: 50%;
-  padding: 10px;
+  justify-self: end;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  justify-self: end;
+
+  cursor: pointer;
 }
 
-nav .search-bar {
+.navbar .search-bar {
   grid-area: search-bar;
 }
 
-nav .search-bar .form-group {
+.navbar .search-bar .form-group {
   position: relative;
 }
 
-nav .search-bar input {
+.navbar .search-bar input {
   width: 100%;
   padding: 10px 5px;
   border: 1px solid #ccc;
@@ -71,13 +79,12 @@ nav .search-bar input {
   font-size: 0.8rem;
   color: var(--text-color);
 }
-
-nav .search-bar input:focus {
+.navbar .search-bar input:focus {
   outline: none;
   border-color: var(--primary-color);
 }
 
-nav .search-bar button {
+.navbar .search-bar button {
   position: absolute;
   width: 45px;
   right: 0px;
@@ -87,25 +94,18 @@ nav .search-bar button {
   background-color: transparent;
   color: white;
   border: none;
-  padding: 10px;
   cursor: pointer;
   font-size: 0.8rem;
   border-radius: 0px;
   color: var(--text-color);
-  transition: all 0.3s ease;
 }
 
-nav .search-bar button:hover {
+.navbar .search-bar button:hover {
   background-color: var(--primary-color);
   color: white;
 }
 
-nav h1 {
-  margin: 0;
-  font-size: 1.5rem;
-}
-
-nav ul {
+.navbar ul {
   display: none;
   width: 100%;
   position: absolute;
@@ -114,22 +114,19 @@ nav ul {
   left: 0;
 }
 
-nav ul li {
+.navbar ul li {
   padding: 10px 0;
   background-color: #fff;
 }
 
-
-nav ul li a {
+.navbar ul li a {
   color: black;
   text-decoration: none;
   font-size: 1rem;
 }
-
 
 /*
   Responsive styles from mobile first
   We will use media queries to
   create a responsive navbar that works on mobile and desktop 
 */
-
